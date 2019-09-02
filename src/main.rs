@@ -9,12 +9,12 @@ fn main() {
     let output = io::stdout();
     let mut stdout = output.lock();
 
-    let mut ip_munger = IPMunger {
-        out: &mut stdout,
-        config: IPMungerConfig {
+    let mut ip_munger = IPMunger::new(
+        IPMungerConfig {
             format: IPFormat::Exploded,
         },
-    };
+        &mut stdout,
+    );
 
     replace(&mut stdin, &mut ip_munger);
 }

@@ -13,8 +13,8 @@ pub struct IPMungerConfig {
 }
 
 pub struct IPMunger<'a> {
-    pub out: &'a mut dyn Write,
-    pub config: IPMungerConfig,
+    out: &'a mut dyn Write,
+    config: IPMungerConfig,
 }
 
 fn maybe_ip(line: &str) -> Option<Ipv6Addr> {
@@ -39,7 +39,16 @@ fn compact<T: Write>(ip: &Ipv6Addr, loc: &mut T) {
     write!(loc, "{}", ip).unwrap();
 }
 
-impl Munger for IPMunger<'_> {
+impl IPMunger<'_> {
+    pub fn new<'a>(config: IPMungerConfig, output: &'a mut dyn Write) -> IPMunger {
+        IPMunger {
+            out: output,
+            config: config,
+        }
+    }
+}
+
+impl Munger<'_> for IPMunger<'_> {
     fn possible_match(&self, c: char) -> bool {
         match c {
             '0'..='9' | 'a'..='f' | 'A'..='F' | ':' => true,
@@ -49,14 +58,17 @@ impl Munger for IPMunger<'_> {
     fn rewriter(&mut self, s: &str) {
         match maybe_ip(&s) {
             Some(ip) => match self.config.format {
-                IPFormat::Exploded => explode(&ip, &mut self.out),
-                IPFormat::Compact => compact(&ip, &mut self.out),
+                IPFormat::Exploded => explode(&ip, &mut self.output()),
+                IPFormat::Compact => compact(&ip, &mut self.output()),
             },
             None => self.writethru(s),
         };
     }
     fn writethru(&mut self, s: &str) {
-        write!(&mut self.out, "{}", s).unwrap();
+        write!(&mut self.output(), "{}", s).unwrap();
+    }
+    fn output<'a>(&'a mut self) -> &'a mut dyn Write {
+        self.out
     }
 }
 
