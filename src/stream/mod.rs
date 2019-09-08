@@ -2,7 +2,7 @@ use crate::munge::Munger;
 use std::io::BufRead;
 use std::io::Write;
 
-pub fn replace<I: BufRead, O: Write>(inbuf: &mut I, outbuf: &mut O, fi: &mut dyn Munger) {
+pub fn replace<I: BufRead, O: Write, M: Munger>(inbuf: &mut I, outbuf: &mut O, munger: &M) {
     let mut line = String::new();
 
     let mut process_line = move |line: &str| {
@@ -13,12 +13,12 @@ pub fn replace<I: BufRead, O: Write>(inbuf: &mut I, outbuf: &mut O, fi: &mut dyn
         let mut inside: bool = false;
 
         for (idx, c) in line.char_indices() {
-            match fi.possible_match(c) {
+            match munger.possible_match(c) {
                 true => {
                     if !inside {
                         // we've exited a known non-match substr
                         inside = true;
-                        fi.writethru(&line[left..idx], outbuf);
+                        munger.writethru(&line[left..idx], outbuf);
                         left = idx;
                     }
                     right = idx;
@@ -26,7 +26,7 @@ pub fn replace<I: BufRead, O: Write>(inbuf: &mut I, outbuf: &mut O, fi: &mut dyn
                 false => {
                     if inside {
                         // we've exited a possible match substr
-                        fi.rewriter(&line[left..right + 1], outbuf);
+                        munger.rewriter(&line[left..right + 1], outbuf);
                         left = idx;
                         right = idx;
                     }
@@ -34,7 +34,7 @@ pub fn replace<I: BufRead, O: Write>(inbuf: &mut I, outbuf: &mut O, fi: &mut dyn
                 }
             }
         }
-        fi.rewriter(&line[left..], outbuf);
+        munger.rewriter(&line[left..], outbuf);
     };
 
     loop {

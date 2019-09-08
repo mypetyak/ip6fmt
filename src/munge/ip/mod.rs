@@ -44,7 +44,7 @@ impl IPMunger {
     }
 }
 
-impl Munger<'_> for IPMunger {
+impl Munger for IPMunger {
     fn possible_match(&self, c: char) -> bool {
         match c {
             '0'..='9' | 'a'..='f' | 'A'..='F' | ':' => true,
