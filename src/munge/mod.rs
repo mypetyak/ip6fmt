@@ -7,10 +7,11 @@ use std::io::Write;
 pub trait Munger<'a> {
     fn possible_match(&self, c: char) -> bool;
     // possibly expensive
-    fn rewriter(&mut self, s: &str);
+    fn rewriter(&self, s: &str, o: &mut dyn Write);
     // fast, use on substrs known not to be a match
-    fn writethru(&mut self, s: &str);
-    fn output(&'a mut self) -> &'a mut dyn Write;
+    fn writethru(&self, s: &str, o: &mut dyn Write) {
+        write!(o, "{}", s).unwrap();
+    }
 }
 
 pub mod ip;

@@ -1,7 +1,8 @@
 use crate::munge::Munger;
 use std::io::BufRead;
+use std::io::Write;
 
-pub fn replace<I: BufRead>(inbuf: &mut I, fi: &mut dyn Munger) {
+pub fn replace<I: BufRead, O: Write>(inbuf: &mut I, outbuf: &mut O, fi: &mut dyn Munger) {
     let mut line = String::new();
 
     let mut process_line = move |line: &str| {
@@ -17,7 +18,7 @@ pub fn replace<I: BufRead>(inbuf: &mut I, fi: &mut dyn Munger) {
                     if !inside {
                         // we've exited a known non-match substr
                         inside = true;
-                        fi.writethru(&line[left..idx]);
+                        fi.writethru(&line[left..idx], outbuf);
                         left = idx;
                     }
                     right = idx;
@@ -25,7 +26,7 @@ pub fn replace<I: BufRead>(inbuf: &mut I, fi: &mut dyn Munger) {
                 false => {
                     if inside {
                         // we've exited a possible match substr
-                        fi.rewriter(&line[left..right + 1]);
+                        fi.rewriter(&line[left..right + 1], outbuf);
                         left = idx;
                         right = idx;
                     }
@@ -33,7 +34,7 @@ pub fn replace<I: BufRead>(inbuf: &mut I, fi: &mut dyn Munger) {
                 }
             }
         }
-        fi.rewriter(&line[left..]);
+        fi.rewriter(&line[left..], outbuf);
     };
 
     loop {

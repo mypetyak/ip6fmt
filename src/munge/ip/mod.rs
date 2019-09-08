@@ -12,8 +12,7 @@ pub struct IPMungerConfig {
     pub format: IPFormat,
 }
 
-pub struct IPMunger<'a> {
-    out: &'a mut dyn Write,
+pub struct IPMunger {
     config: IPMungerConfig,
 }
 
@@ -39,36 +38,27 @@ fn compact<T: Write>(ip: &Ipv6Addr, loc: &mut T) {
     write!(loc, "{}", ip).unwrap();
 }
 
-impl IPMunger<'_> {
-    pub fn new<'a>(config: IPMungerConfig, output: &'a mut dyn Write) -> IPMunger {
-        IPMunger {
-            out: output,
-            config: config,
-        }
+impl IPMunger {
+    pub fn new(config: IPMungerConfig) -> IPMunger {
+        IPMunger { config: config }
     }
 }
 
-impl Munger<'_> for IPMunger<'_> {
+impl Munger<'_> for IPMunger {
     fn possible_match(&self, c: char) -> bool {
         match c {
             '0'..='9' | 'a'..='f' | 'A'..='F' | ':' => true,
             _ => false,
         }
     }
-    fn rewriter(&mut self, s: &str) {
+    fn rewriter(&self, s: &str, mut o: &mut dyn Write) {
         match maybe_ip(&s) {
             Some(ip) => match self.config.format {
-                IPFormat::Exploded => explode(&ip, &mut self.output()),
-                IPFormat::Compact => compact(&ip, &mut self.output()),
+                IPFormat::Exploded => explode(&ip, &mut o),
+                IPFormat::Compact => compact(&ip, &mut o),
             },
-            None => self.writethru(s),
+            None => self.writethru(s, o),
         };
-    }
-    fn writethru(&mut self, s: &str) {
-        write!(&mut self.output(), "{}", s).unwrap();
-    }
-    fn output<'a>(&'a mut self) -> &'a mut dyn Write {
-        self.out
     }
 }
 
@@ -82,39 +72,36 @@ mod tests {
     #[test]
     fn test_rewriter() {
         let mut buf = Vec::new();
-        let mut m = IPMunger {
-            out: &mut buf,
+        let m = IPMunger {
             config: IPMungerConfig {
                 format: IPFormat::Compact,
             },
         };
 
-        m.rewriter("foo");
-        m.rewriter(" ");
-        m.rewriter("0000:0000:af77:0000:0000:0000:0000:0001");
-        m.rewriter(" ");
-        m.rewriter("0:0::0:1");
+        m.rewriter("foo", &mut buf);
+        m.rewriter(" ", &mut buf);
+        m.rewriter("0000:0000:af77:0000:0000:0000:0000:0001", &mut buf);
+        m.rewriter(" ", &mut buf);
+        m.rewriter("0:0::0:1", &mut buf);
         assert_eq!("foo 0:0:af77::1 ::1", String::from_utf8(buf).unwrap());
     }
 
     #[test]
     fn test_writethru() {
         let mut buf = Vec::new();
-        let mut m = IPMunger {
-            out: &mut buf,
+        let m = IPMunger {
             config: IPMungerConfig {
                 format: IPFormat::Compact,
             },
         };
 
-        m.writethru("foo");
+        m.writethru("foo", &mut buf);
         assert_eq!("foo", String::from_utf8(buf).unwrap());
     }
 
     #[test]
     fn test_possible_match() {
         let m = IPMunger {
-            out: &mut Vec::new(),
             config: IPMungerConfig {
                 format: IPFormat::Compact,
             },
