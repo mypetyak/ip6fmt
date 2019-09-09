@@ -8,8 +8,14 @@ pub enum IPFormat {
     Exploded,
 }
 
+pub enum IPSurround {
+    Brackets,
+    Empty,
+}
+
 pub struct IPMungerConfig {
     pub format: IPFormat,
+    pub surround: IPSurround,
 }
 
 pub struct IPMunger {
@@ -53,10 +59,20 @@ impl Munger for IPMunger {
     }
     fn rewriter(&self, s: &str, mut o: &mut dyn Write) {
         match maybe_ip(&s) {
-            Some(ip) => match self.config.format {
-                IPFormat::Exploded => explode(&ip, &mut o),
-                IPFormat::Compact => compact(&ip, &mut o),
-            },
+            Some(ip) => {
+                match self.config.surround {
+                    IPSurround::Brackets => write!(o, "[").unwrap(),
+                    IPSurround::Empty => (),
+                };
+                match self.config.format {
+                    IPFormat::Exploded => explode(&ip, &mut o),
+                    IPFormat::Compact => compact(&ip, &mut o),
+                };
+                match self.config.surround {
+                    IPSurround::Brackets => write!(o, "]").unwrap(),
+                    IPSurround::Empty => (),
+                };
+            }
             None => self.writethru(s, o),
         };
     }
@@ -66,7 +82,7 @@ impl Munger for IPMunger {
 mod tests {
     //TODO: figure out the typical rust naming and use conventions
     use super::Munger;
-    use super::{compact, explode, maybe_ip, IPFormat, IPMunger, IPMungerConfig};
+    use super::{compact, explode, maybe_ip, IPFormat, IPMunger, IPMungerConfig, IPSurround};
     use std::net::Ipv6Addr;
 
     #[test]
@@ -75,6 +91,7 @@ mod tests {
         let m = IPMunger {
             config: IPMungerConfig {
                 format: IPFormat::Compact,
+                surround: IPSurround::Empty,
             },
         };
 
@@ -87,11 +104,30 @@ mod tests {
     }
 
     #[test]
+    fn test_wrap_brackets() {
+        let mut buf = Vec::new();
+        let m = IPMunger {
+            config: IPMungerConfig {
+                format: IPFormat::Compact,
+                surround: IPSurround::Brackets,
+            },
+        };
+
+        m.rewriter("foo", &mut buf);
+        m.rewriter(" ", &mut buf);
+        m.rewriter("0000:0000:af77:0000:0000:0000:0000:0001", &mut buf);
+        m.rewriter(" ", &mut buf);
+        m.rewriter("0:0::0:1", &mut buf);
+        assert_eq!("foo [0:0:af77::1] [::1]", String::from_utf8(buf).unwrap());
+    }
+
+    #[test]
     fn test_writethru() {
         let mut buf = Vec::new();
         let m = IPMunger {
             config: IPMungerConfig {
                 format: IPFormat::Compact,
+                surround: IPSurround::Empty,
             },
         };
 
@@ -104,6 +140,7 @@ mod tests {
         let m = IPMunger {
             config: IPMungerConfig {
                 format: IPFormat::Compact,
+                surround: IPSurround::Empty,
             },
         };
 
