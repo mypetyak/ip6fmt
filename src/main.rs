@@ -1,16 +1,26 @@
+extern crate clap;
+use clap::{App, Arg};
 use std::io;
 
 use ip6fmt::munge::ip::{IPFormat, IPMunger, IPMungerConfig};
 use ip6fmt::stream::replace;
 
 fn main() {
+    let args = App::new("ip6fmt")
+        .about("Re-format the IPv6 address from stdin.")
+        .arg(Arg::with_name("c").short("c").help("Compact IPv6 format"))
+        .get_matches();
+
     let input = io::stdin();
     let mut stdin = input.lock();
     let output = io::stdout();
     let mut stdout = output.lock();
 
     let ip_munger = IPMunger::new(IPMungerConfig {
-        format: IPFormat::Exploded,
+        format: match args.is_present("c") {
+            true => IPFormat::Compact,
+            false => IPFormat::Exploded,
+        },
     });
 
     replace(&mut stdin, &mut stdout, &ip_munger);
