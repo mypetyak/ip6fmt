@@ -1,5 +1,5 @@
 [package]
-name = "ip"
+name = "ip6fmt"
 version = "0.1.0"
 authors = ["bunn"]
 edition = "2018"

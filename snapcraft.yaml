@@ -1,0 +1,18 @@
+name: ip6fmt
+version: git
+summary: IPv6 parser and formatter for the command line
+description: |
+  ip6fmt munges any IPv6 addresses it finds as it
+  passes stdin to stdout.
+
+confinement: devmode
+base: core18
+
+parts:
+  ip6fmt:
+    plugin: rust
+    source: .
+
+apps:
+  ip6fmt:
+    command: ./bin/ip6fmt

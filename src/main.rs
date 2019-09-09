@@ -1,7 +1,7 @@
 use std::io;
 
-use ip::munge::ip::{IPFormat, IPMunger, IPMungerConfig};
-use ip::stream::replace;
+use ip6fmt::munge::ip::{IPFormat, IPMunger, IPMungerConfig};
+use ip6fmt::stream::replace;
 
 fn main() {
     let input = io::stdin();
