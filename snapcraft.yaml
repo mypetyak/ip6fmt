@@ -5,7 +5,7 @@ description: |
   ip6fmt munges any IPv6 addresses it finds as it
   passes stdin to stdout.
 
-confinement: devmode
+confinement: strict
 base: core18
 
 parts:
