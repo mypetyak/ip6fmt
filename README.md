@@ -5,7 +5,17 @@ I work with IPv6 addresses and frequently find myself wanting to compare, sort, 
 
 [![Build Status](https://travis-ci.org/mypetyak/ip6fmt.svg?branch=master)](https://travis-ci.org/mypetyak/ip6fmt)
 
+## Installing a Release
+Compiled binaries are released as [snaps](https://snapcraft.io/docs/getting-started), which can be installed on most Linux systems via:
+
+```
+$ snap install ip6fmt
+```
+
 ## Building
+Dependencies: `cargo`, `rust`
+
+To build from source:
 
 ```
 $ git clone https://github.com/mypetyak/ip6fmt
@@ -19,6 +29,7 @@ foo bar 0000:0000:0000:0000:0000:0000:0000:0001 baz 0000:af77:0000:0000:0000:000
 ```
 
 ## Running Tests
+To run unit tests:
 
 ```
 $ cargo test --all
