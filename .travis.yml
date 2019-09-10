@@ -1,11 +1,3 @@
 language: rust
 rust:
     - stable
-
-dist: xenial
-
-deploy:
-    provider: snap
-    snap: ip6fmt_*.snap
-    channel: edge
-    skip_cleanup: true
