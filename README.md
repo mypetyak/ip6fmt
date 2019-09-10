@@ -12,6 +12,53 @@ Compiled binaries are released as [snaps](https://snapcraft.io/docs/getting-star
 $ snap install ip6fmt
 ```
 
+## Usage
+See the help:
+
+```
+$ ip6fmt -h
+ip6fmt
+Re-format the IPv6 address from stdin.
+
+USAGE:
+    ip6fmt [FLAGS]
+
+FLAGS:
+    -b               Surround with brackets
+    -c               Compact IPv6 format
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+```
+
+Some examples:
+
+```
+$ cat /tmp/foo
+foo bar
+::1 baz
+fuz 0:af77::4 fah
+boo 4:0:0::27
+
+$ ip6fmt </tmp/foo
+foo bar
+0000:0000:0000:0000:0000:0000:0000:0001 baz
+fuz 0000:af77:0000:0000:0000:0000:0000:0004 fah
+boo 0004:0000:0000:0000:0000:0000:0000:0027
+
+$ ip6fmt -b </tmp/foo
+foo bar
+[0000:0000:0000:0000:0000:0000:0000:0001] baz
+fuz [0000:af77:0000:0000:0000:0000:0000:0004] fah
+boo [0004:0000:0000:0000:0000:0000:0000:0027]
+
+$ ip6fmt -b -c </tmp/foo
+foo bar
+[::1] baz
+fuz [0:af77::4] fah
+boo [4::27]
+```
+
+
 ## Building
 Dependencies: `cargo`, `rust`
 
@@ -20,12 +67,8 @@ To build from source:
 ```
 $ git clone https://github.com/mypetyak/ip6fmt
 $ cd ip6fmt
-
-$ echo "foo bar ::1 baz 0:af77::4 fuz" | cargo run
-   Compiling ip v0.1.0 (/home/bunn/stuff-artiodactyl/rust/ip6fmt)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.67s
-     Running `target/debug/ip`
-foo bar 0000:0000:0000:0000:0000:0000:0000:0001 baz 0000:af77:0000:0000:0000:0000:0000:0004 fuz
+$ cargo build
+$ ./target/debug/ip6fmt -h
 ```
 
 ## Running Tests
