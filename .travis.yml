@@ -4,7 +4,7 @@ rust:
 services:
     - docker
 script:
-    - docker run -v "${PWD}":/build -w /build snapcore/snapcraft:stable snapcraft
+    - docker run -v "${PWD}":/build -w /build snapcore/snapcraft:stable sh -c 'apt update -qq && snapcraft'
 dist: xenial
 deploy:
     provider: snap
