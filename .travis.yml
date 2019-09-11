@@ -1,9 +1,11 @@
 language: rust
 rust:
     - stable
-
+services:
+    - docker
+script:
+    - docker run -v "${PWD}":/build -w /build snapcore/snapcraft:stable snapcraft
 dist: xenial
-
 deploy:
     provider: snap
     snap: ip6fmt_*.snap
