@@ -8,8 +8,15 @@ I work with IPv6 addresses and frequently find myself wanting to compare, sort, 
 ## Installing a Release
 Compiled binaries are released as [snaps](https://snapcraft.io/docs/getting-started), which can be installed on most Linux systems via:
 
+Install a stable release with:
 ```
-$ snap install ip6fmt
+$ sudo snap install ip6fmt
+```
+
+Install a release built from `master` with:
+
+```
+$ sudo snap install ip6fmt --edge
 ```
 
 ## Usage
